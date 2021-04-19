@@ -149,8 +149,34 @@ namespace Names
 
 		private void installMod_Click(object sender, RoutedEventArgs e)
 		{
-
-            ZipFile.ExtractToDirectory(txtName.Text, installPath.Text + "\\Mods");
+            String APPDATA = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            String extractPath = APPDATA + "\\shadowlerone\\StardewModManager\\extracted";
+            ZipFile.ExtractToDirectory(txtName.Text, extractPath);
+            String modPath = FindMod(extractPath);
+            if (modPath != "Error"){
+                Mod mod = ProcessMod(modPath);
+                String destPath = installPath.Text + "\\Mods\\" + mod.Name;
+                Directory.Move(modPath, destPath);
+                resetMods();
+            }
+            Directory.Delete(extractPath, true);
         }
+        private String FindMod(string directory){
+            if (File.Exists(directory + "\\manifest.json")){
+                return directory;
+			} else {
+                string[] subdirectories = Directory.GetDirectories(directory);
+                if (subdirectories.Length > 0)
+                {
+                    foreach (string subdirectory in subdirectories)
+                    {
+                        return FindMod(subdirectory);
+                    }
+                    return "Error";
+                } else {
+                    return "Error";
+				}
+            }
+		}
 	}
 }

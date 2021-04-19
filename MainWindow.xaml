@@ -27,7 +27,7 @@
 		</StackPanel>
 		<StackPanel Grid.Row="2" Grid.Column="1" Margin="5,0,0,0">
 			<Label>Stardew Install Path</Label>
-			<TextBox x:Name="installPath" Text="E:\SteamLibrary\steamapps\common\Stardew Valley" InputScope="FullFilePath" />
+			<TextBox x:Name="installPath" Text="C:\Program Files (x86)\Steam\steamapps\common\Stardew Valley" InputScope="FullFilePath" />
 			<Button x:Name="fpReload" Margin="0,5,0,0" Click="reloadFilePath">Reload Mods
 			</Button>
 			<Label>Add Mod</Label>

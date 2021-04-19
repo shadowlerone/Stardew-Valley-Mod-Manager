@@ -13,6 +13,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO;
+using System.IO.Compression;
+using Newtonsoft.Json;
+using Microsoft.Win32;
 
 namespace Names
 {
@@ -21,51 +24,133 @@ namespace Names
     /// </summary>
     public partial class MainWindow : Window
     {
+        private Dictionary<String,Mod> EnabledMods = new Dictionary<string, Mod>();
+        private Dictionary<String, Mod> DisabledMods = new Dictionary<string, Mod>();
+        private Dictionary<String, Mod> Mods = new Dictionary<string, Mod>();
         public MainWindow()
         {
             InitializeComponent();
-            lstNames.Items.Add("shadowlerone");
+            ModDir();
         }
-        private void ButtonAddName_Click(object sender, RoutedEventArgs e)
+        private void ModDir() {
+            if (Directory.Exists(installPath.Text))
+            {
+                if (File.Exists(installPath.Text + "\\Stardew Valley.exe"))
+                {
+                    if (!Directory.Exists(installPath.Text + "\\Mods"))
+                    {
+                        Directory.CreateDirectory(installPath.Text + "\\Mods");
+                    }
+
+                    if (!Directory.Exists(installPath.Text + "\\Disabled Mods"))
+                    {
+                        Directory.CreateDirectory(installPath.Text + "\\Disabled Mods");
+                    }
+                    SetupMods(installPath.Text);
+                    //ProcessDirectory(installPath.Text + "\\Disabled Mods");
+                }
+            }
+        }
+        private void resetMods() {
+            EnabledMods.Clear();
+            DisabledMods.Clear();
+            lstDisabled.Items.Clear();
+            lstEnabled.Items.Clear();
+            Mods.Clear();
+            ModDir();
+        }
+		private void SetupMods(string dir)
+		{
+            string[] DisabledsubdirectoryEntries = Directory.GetDirectories(dir + "\\Disabled Mods");
+            foreach (string subdirectory in DisabledsubdirectoryEntries)
+            {
+                Mod mod = ProcessMod(subdirectory);
+                Mods.Add(mod.Name, mod);
+                DisabledMods.Add(mod.Name, mod);
+                lstDisabled.Items.Add(mod.Name);
+            }
+            string[] EnabledsubdirectoryEntries = Directory.GetDirectories(dir + "\\Mods");
+            foreach (string subdirectory in EnabledsubdirectoryEntries){
+                Mod mod = ProcessMod(subdirectory);
+                Mods.Add(mod.Name, mod);
+                EnabledMods.Add(mod.Name, mod);
+                lstEnabled.Items.Add(mod.Name);
+            }  
+        }
+
+		private void ButtonAddName_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(txtName.Text) && !lstNames.Items.Contains(txtName.Text))
-                lstNames.Items.Add(txtName.Text);
         }
 
         private void reloadFilePath(object sender, RoutedEventArgs e)
         {
-            if (File.Exists(installPath.Text))
+            resetMods();
+        }
+		private Mod ProcessMod(string subdirectory)
+		{
+            using (StreamReader file = File.OpenText(subdirectory + "\\manifest.json"))
             {
-                // This path is a file
-                ProcessFile(installPath.Text);
+                JsonSerializer serializer = new JsonSerializer();
+                Mod mod = (Mod)serializer.Deserialize(file, typeof(Mod));
+                mod.FilePath = subdirectory;
+                return mod;
             }
-            else if (Directory.Exists(installPath.Text))
+		}
+		
+		private void removeMod_Click(object sender, RoutedEventArgs e)
+		{
+            String destPath = installPath.Text + "\\Disabled Mods\\" + lstEnabled.SelectedItem.ToString();
+            if (!Directory.Exists(installPath.Text + "\\Disabled Mods\\" + lstEnabled.SelectedItem.ToString()))
             {
-                // This path is a directory
-                ProcessDirectory(installPath.Text + "\\Mods");
+                Directory.Move(Mods[lstEnabled.SelectedItem.ToString()].FilePath, destPath);
+                resetMods();
             }
-            else
+            
+        }
+		private void addMod_Click(object sender, RoutedEventArgs e)
+		{
+            String destPath = installPath.Text + "\\Mods\\" + lstDisabled.SelectedItem.ToString();
+            if (!Directory.Exists(installPath.Text + "\\Mods\\" + lstDisabled.SelectedItem.ToString()))
             {
-                debug.Text += ("{0} is not a valid file or directory.\n", installPath.Text);
+                Directory.Move(Mods[lstDisabled.SelectedItem.ToString()].FilePath, destPath);
+                resetMods();
             }
         }
 
-        private void ProcessDirectory(string targetDirectory)
-        {
-            // Process the list of files found in the directory.
-            string[] fileEntries = Directory.GetFiles(targetDirectory);
-            foreach (string fileName in fileEntries)
-                ProcessFile(fileName);
-
-            // Recurse into subdirectories of this directory.
-            string[] subdirectoryEntries = Directory.GetDirectories(targetDirectory);
-            foreach (string subdirectory in subdirectoryEntries)
-                ProcessDirectory(subdirectory);
+		private void selectMod_Click(object sender, RoutedEventArgs e)
+		{
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+                txtName.Text = openFileDialog.FileName;
         }
 
-        private void ProcessFile(string path)
-        {
-            debug.Text += ("Processed file '{0}'.\n", path);
+		private void lstEnabled_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+            if (e.AddedItems.Count > 0) {
+                debug.Text = e.AddedItems[0].ToString();
+                Description.Text = Mods[e.AddedItems[0].ToString()].Description;
+                lstDisabled.UnselectAll();
+                addMod.Visibility = Visibility.Hidden;
+                removeMod.Visibility = Visibility.Visible;
+            } 
         }
-    }
+
+		private void lstDisabled_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+            if (e.AddedItems.Count > 0)
+            {
+                debug.Text = e.AddedItems[0].ToString();
+                Description.Text = Mods[e.AddedItems[0].ToString()].Description;
+                lstEnabled.UnselectAll();
+                addMod.Visibility = Visibility.Visible;
+                removeMod.Visibility = Visibility.Hidden;
+            }
+        }
+
+		private void installMod_Click(object sender, RoutedEventArgs e)
+		{
+
+            ZipFile.ExtractToDirectory(txtName.Text, installPath.Text + "\\Mods");
+        }
+	}
 }

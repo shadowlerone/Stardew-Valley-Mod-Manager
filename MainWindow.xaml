@@ -6,32 +6,40 @@
         xmlns:local="clr-namespace:Names"
         mc:Ignorable="d"
         Title="Names" Height="450" Width="800">
-    <Grid Margin="10">
+	<Grid Margin="10">
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        
-        <Label Grid.Column="1">Stardew Mod Manager</Label>
-        
-        <ListBox Grid.Row="2" x:Name="lstNames" />
-        <StackPanel Grid.Row="2" Grid.Column="1" Margin="5,0,0,0">
-            <Label>Stardew Install Path</Label>
-            <TextBox x:Name="installPath" Text="E:\SteamLibrary\steamapps\common\Stardew Valley" InputScope="FullFilePath" />
-            <Button x:Name="fpReload" Margin="0,5,0,0" Click="reloadFilePath">Reload Mods
-            </Button>
-            <Label>Add Mod</Label>
-            <TextBox x:Name="txtName" Margin="0,5,0,0"/>
-            <Button x:Name="btnAdd" Margin="0,5,0,0" Click="ButtonAddName_Click">Add Name</Button>
-            <Label>Debug</Label>
-            <TextBox x:Name="debug" Margin="0,5,0,0" MinLines="10"/>
-        </StackPanel>
-    </Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="*" />
+		</Grid.ColumnDefinitions>
+
+		<Label Grid.Column="1">Stardew Mod Manager</Label>
+		<StackPanel Grid.Row="2" Margin="5,0,0,0">
+			<Label>Enabled</Label>
+			<ListBox x:Name="lstEnabled" SelectionChanged="lstEnabled_SelectionChanged" MinHeight="150" MaxHeight="150" Height="120" VerticalAlignment="Top" />
+			<Label>Disabled</Label>
+			<ListBox x:Name="lstDisabled" SelectionChanged="lstDisabled_SelectionChanged" MinHeight="150" MaxHeight="150" Height="115" VerticalAlignment="Bottom" />
+		</StackPanel>
+		<StackPanel Grid.Row="2" Grid.Column="1" Margin="5,0,0,0">
+			<Label>Stardew Install Path</Label>
+			<TextBox x:Name="installPath" Text="E:\SteamLibrary\steamapps\common\Stardew Valley" InputScope="FullFilePath" />
+			<Button x:Name="fpReload" Margin="0,5,0,0" Click="reloadFilePath">Reload Mods
+			</Button>
+			<Label>Add Mod</Label>
+			<TextBox x:Name="txtName" Margin="0,5,0,0"/>
+			<Button x:Name="selectMod" Margin="0,5,0,0" Click="selectMod_Click">Select Mod</Button>
+			<Button x:Name="installMod" Margin="0,5,0,0" Click="installMod_Click">Install Mod</Button>
+			<Label>Debug</Label>
+			<TextBox x:Name="debug" Margin="0,5,0,0"/>
+			<Label>Description</Label>
+			<TextBox x:Name="Description" Margin="0,5,0,0" IsReadOnly="True" IsUndoEnabled="False" TextWrapping="Wrap"/>
+			<Button x:Name="addMod" Margin="0,5,0,0" Click="addMod_Click" Visibility="Hidden">Enable</Button>
+			<Button x:Name="removeMod" Margin="0,5,0,0" Click="removeMod_Click" Visibility="Hidden">Disable</Button>
+		</StackPanel>
+	</Grid>
 </Window>
